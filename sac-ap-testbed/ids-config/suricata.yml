@@ -1,0 +1,24 @@
+# A minimal suricata.yaml for this testbed
+
+# Path where to look for rules.
+rule-files:
+  - /usr/local/etc/suricata/rules/suricata.rules
+
+# Enable eve.json logging
+outputs:
+  - eve-log:
+      enabled: yes
+      type: file
+      filename: eve.json
+      threads: 1
+      # Log all alert types
+      types:
+        - alert
+
+# Set the interface to monitor
+af-packet:
+  - interface: eth0
+    threads: 1
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes

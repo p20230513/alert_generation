@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  defender:
+    build: ./defender
+    container_name: defender
+    tty: true # Keep the container running for interactive use
+    volumes:
+      - ./defender:/app
+      - ./logs/suricata:/var/log/suricata:ro
+    networks:
+      - testbed-net
+    depends_on:
+      - ids
+    command: python main.py
+
+  ids:
+    image: jasonish/suricata:latest-amd64
+    container_name: ids
+    # For real-time mode, use: network_mode: host
+    networks:
+      testbed-net:
+        ipv4_address: 172.20.0.10
+    volumes:
+      - ./ids-config/suricata.yaml:/etc/suricata/suricata.yaml
+      - ./logs/suricata:/var/log/suricata
+      - ./data:/data:ro
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_NICE
+      # It will first update the rules, and only if successful, start Suricata.
+    command: >
+      bash -c "suricata-update &&
+               suricata -i eth0 -c /etc/suricata/suricata.yaml --runmode=workers"
+
+  traffic-replay:
+    image: ubuntu:20.04
+    container_name: traffic-replay
+    volumes:
+      - ./traffic-replay:/app
+      - ./data:/data:ro
+    networks:
+      - testbed-net
+    depends_on:
+      - ids
+    command: /bin/bash -c "apt-get update && apt-get install -y tcpreplay && sleep infinity"
+
+networks:
+  testbed-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

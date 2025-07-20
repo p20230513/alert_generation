@@ -1,0 +1,7 @@
+tensorflow
+tensorflow-probability
+numpy
+pandas
+scikit-learn
+docker
+python-json-logger
