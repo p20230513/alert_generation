@@ -98,7 +98,6 @@ class SacApAgent:
         squashed_action = tf.tanh(raw_action)
         
         # The output action represents priorities. We can scale it if needed.
-        # For now, let's return the squashed action and its log probability.
         log_prob = normal_dist.log_prob(raw_action)
         log_prob -= tf.math.log(1.0 - tf.square(squashed_action) + 1e-6)
         log_prob = tf.reduce_sum(log_prob, axis=1, keepdims=True)

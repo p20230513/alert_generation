@@ -1,4 +1,3 @@
-# A minimal suricata.yaml for this testbed
 
 # Path where to look for rules.
 rule-files:

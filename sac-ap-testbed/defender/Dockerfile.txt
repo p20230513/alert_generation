@@ -9,9 +9,3 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-
-# The command to run the application is specified in docker-compose.yml```
-
-#### 5. `defender/requirements.txt`
-
-List of Python libraries needed. We'll start with a few key ones. You will need to add `tensorflow` or `torch` depending on your implementation.

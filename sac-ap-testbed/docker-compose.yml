@@ -4,7 +4,7 @@ services:
   defender:
     build: ./defender
     container_name: defender
-    tty: true # Keep the container running for interactive use
+    tty: true
     volumes:
       - ./defender:/app
       - ./logs/suricata:/var/log/suricata:ro
@@ -17,34 +17,29 @@ services:
   ids:
     image: jasonish/suricata:latest-amd64
     container_name: ids
-    # For real-time mode, use: network_mode: host
     networks:
       testbed-net:
-        ipv4_address: 172.20.0.10
+        ipv4_address: 172.20.0.10 # Static IP
     volumes:
       - ./ids-config/suricata.yaml:/etc/suricata/suricata.yaml
       - ./logs/suricata:/var/log/suricata
-      - ./data:/data:ro
     cap_add:
       - NET_ADMIN
       - NET_RAW
       - SYS_NICE
-      # It will first update the rules, and only if successful, start Suricata.
     command: >
-      bash -c "suricata-update &&
+      bash -c "suricata-update -q &&
                suricata -i eth0 -c /etc/suricata/suricata.yaml --runmode=workers"
 
   traffic-replay:
-    image: ubuntu:20.04
+    build: ./traffic-replay
     container_name: traffic-replay
-    volumes:
-      - ./traffic-replay:/app
-      - ./data:/data:ro
     networks:
       - testbed-net
+    cap_add:
+      - NET_RAW # Needed by Scapy to craft raw packets
     depends_on:
       - ids
-    command: /bin/bash -c "apt-get update && apt-get install -y tcpreplay && sleep infinity"
 
 networks:
   testbed-net:
