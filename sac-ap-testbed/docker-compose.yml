@@ -15,7 +15,7 @@ services:
     command: python main.py
 
   ids:
-    image: jasonish/suricata:latest-amd64
+    image: jasonish/suricata:latest
     container_name: ids
     networks:
       testbed-net:
