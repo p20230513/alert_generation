@@ -1,0 +1,8 @@
+# Rule 1: Guaranteed alert for any ICMP packet
+alert icmp any any -> $HOME_NET any (msg:"ICMP Packet Detected - GUARANTEED ALERT"; classtype:icmp-event; sid:1000001; rev:1;)
+
+# Rule 2: Guaranteed alert for any TCP packet with only the SYN flag set
+alert tcp any any -> $HOME_NET any (msg:"SYN Flood Packet Detected - GUARANTEED ALERT"; flags:S; classtype:dos-attack; sid:1000002; rev:1;)
+
+# Rule 3: Guaranteed alert for benign traffic simulation (SYN to port 80)
+alert tcp any any -> $HOME_NET 80 (msg:"Benign Web Traffic SYN Detected - GUARANTEED ALERT"; flags:S; classtype:policy-violation; sid:1000003; rev:1;)

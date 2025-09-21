@@ -1,5 +1,5 @@
 tensorflow
-tensorflow-probability
+tensorflow-probability[tf]
 numpy
 pandas
 scikit-learn

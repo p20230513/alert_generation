@@ -24,7 +24,7 @@ class ReplayBuffer:
 class SacApAgent:
     """Soft Actor-Critic Agent for Alert Prioritization."""
     def __init__(self, state_dim, action_dim, action_bound, buffer_size=100000,
-                 lr_actor=0.001, lr_critic=0.002, gamma=0.99, tau=0.005, alpha=0.2):
+                 lr_actor=0.0003, lr_critic=0.0003, gamma=0.99, tau=0.005, alpha=0.5):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.action_bound = action_bound  # For scaling actions

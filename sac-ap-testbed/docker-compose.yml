@@ -1,43 +1,60 @@
-version: '3.8'
-
 services:
   defender:
     build: ./defender
     container_name: defender
     tty: true
+    environment:
+      - CUDA_VISIBLE_DEVICES=-1
     volumes:
       - ./defender:/app
       - ./logs/suricata:/var/log/suricata:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - testbed-net
     depends_on:
       - ids
     command: python main.py
 
+  # This temporary container updates the rules into the shared volume and then exits.
+  ids-rule-updater:
+    image: jasonish/suricata:latest
+    container_name: ids-rule-updater
+    volumes:
+      - ./ids-config/suricata.yaml:/etc/suricata/suricata.yaml
+      - ./ids-config/update.yaml:/etc/suricata/update.yaml
+      - suricata-rules:/var/lib/suricata/rules
+    command: suricata-update --no-reload
+
+  # This is the main, long-running IDS engine.
   ids:
     image: jasonish/suricata:latest
     container_name: ids
     networks:
       testbed-net:
-        ipv4_address: 172.20.0.10 # Static IP
+        ipv4_address: 172.20.0.10
     volumes:
       - ./ids-config/suricata.yaml:/etc/suricata/suricata.yaml
+      - ./ids-config/custom.rules:/var/lib/suricata/rules/custom.rules
       - ./logs/suricata:/var/log/suricata
+      - suricata-rules:/var/lib/suricata/rules
     cap_add:
       - NET_ADMIN
       - NET_RAW
       - SYS_NICE
-    command: >
-      bash -c "suricata-update -q &&
-               suricata -i eth0 -c /etc/suricata/suricata.yaml --runmode=workers"
+    depends_on:
+      ids-rule-updater:
+        condition: service_completed_successfully
+    command: suricata -i eth0 -c /etc/suricata/suricata.yaml --runmode=workers
 
+  # THIS SERVICE IS NOW CORRECTLY INCLUDED
   traffic-replay:
     build: ./traffic-replay
     container_name: traffic-replay
     networks:
       - testbed-net
     cap_add:
-      - NET_RAW # Needed by Scapy to craft raw packets
+      - NET_RAW
+    # It should wait for the main IDS engine to be ready before starting
     depends_on:
       - ids
 
@@ -47,3 +64,7 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/16
+
+# This defines the shared volume for the IDS rules
+volumes:
+  suricata-rules:
